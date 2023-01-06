@@ -28,41 +28,42 @@ type Violation = {
   message: string
 }
 
-type SetState = Record<string, PathEntry>
+type PathEntryMap = Record<string, PathEntry>
 
 async function* validate(dir: string): AsyncGenerator<Violation> {
-  const iterator = traverse(dir)
-  const indexFiles: Set<PathEntry> = new Set()
-  const compoundDirectories: Set<PathEntry> = new Set()
+  const indexFiles: PathEntryMap = {}
+  const compoundDirectories: PathEntryMap = {}
+  const collections: PathEntryMap = {}
 
-  const indexFilesReducer = (state: Record<string, PathEntry>, pathEntry: PathEntry): Record<string, PathEntry> =>
-    pathEntry.dirent.isFile() && pathEntry.dirent.name.match(/^index.tsx?$/)
-      ? { [pathEntry.path]: pathEntry, ...state }
-      : state
-
-  const compoundDirectoriesReducer = (state: Record<string, PathEntry>, pathEntry: PathEntry): Record<string, PathEntry> =>
-  pathEntry.dirent.isDirectory() && pathEntry.dirent.name.match(/[A-Z]/)
-    ? { [pathEntry.path]: pathEntry, ...state }
-    : state
-
-  const reduce = ({ indexFiles, compoundDirectories }: { indexFiles: SetState, compoundDirectories: SetState }, pathEntry: PathEntry) => ({
-    indexFiles: indexFilesReducer(indexFiles, pathEntry),
-    compoundDirectories: compoundDirectoriesReducer(compoundDirectories, pathEntry)
-  })
-
-  let state = { indexFiles: {}, compoundDirectories: {} }
-  for await (const pathEntry of iterator) {
-    if (pathEntry.dirent.isFile() && pathEntry.dirent.name.match(/^index.tsx?$/) {
-      indexFiles.add(pathEntry)
+  for await (const pathEntry of traverse(dir)) {
+    if (pathEntry.dirent.isFile() && pathEntry.dirent.name.match(/^index.tsx?$/)) {
+      indexFiles[pathEntry.path] = pathEntry
+    } else if (pathEntry.dirent.isDirectory()) {
+      if (pathEntry.dirent.name.match(/[A-Z]/)) {
+        compoundDirectories[pathEntry.path] = pathEntry
+      } else {
+        collections[pathEntry.path] = pathEntry
+      }
     }
-
-    if (pathEntry.dirent.isDirectory() && pathEntry.dirent.name.match(/[A-Z]/)) {
-      compoundDirectories.add(pathEntry
-    }
-    state = reduce(state, pathEntry)
   }
+
+  const indexFileDirectoryPaths = Object.keys(indexFiles).map(dirname)
   
-  console.log(state)
+  const compoundDirectoriesWithoutIndexFiles = compoundDirectories
+  for (const directory of indexFileDirectoryPaths) {
+    delete compoundDirectoriesWithoutIndexFiles[directory]
+  }
+
+  console.log(compoundDirectoriesWithoutIndexFiles)
+
+  const collectionsWithIndexFiles: PathEntryMap = {}
+  for (const path of indexFileDirectoryPaths) {
+    if (collections[path]) {
+      collectionsWithIndexFiles[path] = collections[path]
+    }
+  }
+
+  console.log(collectionsWithIndexFiles)
 }
 
 async function main() {
@@ -73,44 +74,82 @@ async function main() {
 
 main()
 
-// type CompoundCheckEntry = PathEntry & { hasIndex: boolean }
+// admin
 
-    // const compoundHasIndex = () => {
-  //   // const hasIndex = Record<string, true>
-  //   let compoundPathEntries: Record<string, CompoundCheckEntry> = {}
-  //   let queue: string[] = []
-
-  //   return (pathEntry: PathEntry | void): Violation | void => {
-  //     if (pathEntry) {
-  //       console.log(pathEntry.path)
-  //       if (pathEntry.dirent.isDirectory()) {
-  //         while (queue.length && queue[0] < pathEntry.path && !pathEntry.path.startsWith(queue[0])) {
-  //           const path = queue.shift()
-  //           const compoundPathEntry = compoundPathEntries[path as string]
-  //           if (!compoundPathEntry.hasIndex) {
-  //             return {
-  //               message: 'Compound directory is missing an index file',
-  //               pathEntries: [compoundPathEntry]
-  //             }
-  //           }
-  //         }
-  //         if (pathEntry.dirent.name.match(/[A-Z]/)) {
-  //           compoundPathEntries[pathEntry.path] = {
-  //             ...pathEntry,
-  //             hasIndex: false
-  //           }
-  //           queue.push(pathEntry.path)
-  //         }
-  //       }
-
-  //       if (pathEntry.dirent.name.match(/^index.tsx?$/)) {
-  //         const directory = dirname(pathEntry.path)
-  //         console.log('set index for ', directory)
-  //         compoundPathEntries[directory].hasIndex = true
-  //         // hasIndex[directory] = true
-  //       }
-  //     }
-  //   }
-  // }
-
-  // const v = compoundHasIndex()
+// const collections = `(
+//   __mocks__
+// |  __snapshots__
+// |  __tests__
+// |  actions
+//   annotations
+//   announcements
+//   api
+//   area
+//   array
+//   assets
+//   categories
+//   channels
+//   common
+//   components
+//   config
+//   consts
+//   contexts
+//   controllers
+//   core
+//   courses
+//   da
+//   data
+//   device
+//   document
+//   documents
+//   elements
+//   en
+//   entities
+//   errors
+//   experts
+//   features
+//   feedback
+//   fonts
+//   forms
+//   helpers
+//   hoc
+//   hooks
+//   icons
+//   images
+//   jobs
+//   karnov-display
+//   layouts
+//   middlewares
+//   mock
+//   mocks
+//   objects
+//   onboarding
+//   packs
+//   pages
+//   properties
+//   redirects
+//   reducers
+//   redux
+//   registry
+//   roboto
+//   segment
+//   selectors
+//   services
+//   settings
+//   store
+//   styles
+//   superhits
+//   sv
+//   svg
+//   tailwind
+//   test
+//   tip
+//   tools
+//   translations
+//   types
+//   ui
+//   utilities
+//   utils
+//   vendor
+//   xml
+// )`
