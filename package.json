@@ -1,0 +1,38 @@
+{
+  "name": "flay",
+  "version": "1.0.0",
+  "description": "File system linting",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "ts-mocha"
+  },
+  "mocha": {
+    "extension": "ts",
+    "spec": [
+      "src/**/*.test.ts"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mzedeler/flay.git"
+  },
+  "keywords": [
+    "lint",
+    "filesystem"
+  ],
+  "author": "Michael Zedeler <michael@zedeler.dk>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mzedeler/flay/issues"
+  },
+  "homepage": "https://github.com/mzedeler/flay#readme",
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/expect": "^24.3.0",
+    "ts-mocha": "^10.0.0"
+  },
+  "dependencies": {
+    "@types/node": "^18.11.18",
+    "ts-node": "^10.9.1"
+  }
+}
