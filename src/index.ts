@@ -28,20 +28,52 @@ type Violation = {
   message: string
 }
 
-type CompoundCheckEntry = PathEntry & { hasIndex: boolean }
+type SetState = Record<string, PathEntry>
 
 async function* validate(dir: string): AsyncGenerator<Violation> {
   const iterator = traverse(dir)
+  const indexFiles: Set<PathEntry> = new Set()
+  const compoundDirectories: Set<PathEntry> = new Set()
 
-  const indexFiles = (state: Record<string, PathEntry>, pathEntry: PathEntry): Record<string, PathEntry> =>
+  const indexFilesReducer = (state: Record<string, PathEntry>, pathEntry: PathEntry): Record<string, PathEntry> =>
     pathEntry.dirent.isFile() && pathEntry.dirent.name.match(/^index.tsx?$/)
       ? { [pathEntry.path]: pathEntry, ...state }
       : state
 
-  const compoundDirectories = (state: Record<string, PathEntry>, pathEntry: PathEntry): Record<string, PathEntry> =>
+  const compoundDirectoriesReducer = (state: Record<string, PathEntry>, pathEntry: PathEntry): Record<string, PathEntry> =>
   pathEntry.dirent.isDirectory() && pathEntry.dirent.name.match(/[A-Z]/)
     ? { [pathEntry.path]: pathEntry, ...state }
     : state
+
+  const reduce = ({ indexFiles, compoundDirectories }: { indexFiles: SetState, compoundDirectories: SetState }, pathEntry: PathEntry) => ({
+    indexFiles: indexFilesReducer(indexFiles, pathEntry),
+    compoundDirectories: compoundDirectoriesReducer(compoundDirectories, pathEntry)
+  })
+
+  let state = { indexFiles: {}, compoundDirectories: {} }
+  for await (const pathEntry of iterator) {
+    if (pathEntry.dirent.isFile() && pathEntry.dirent.name.match(/^index.tsx?$/) {
+      indexFiles.add(pathEntry)
+    }
+
+    if (pathEntry.dirent.isDirectory() && pathEntry.dirent.name.match(/[A-Z]/)) {
+      compoundDirectories.add(pathEntry
+    }
+    state = reduce(state, pathEntry)
+  }
+  
+  console.log(state)
+}
+
+async function main() {
+  for await (const x of await validate('/home/mike/workspace/pro/app/javascript')) {
+    console.log(x)
+  }
+}
+
+main()
+
+// type CompoundCheckEntry = PathEntry & { hasIndex: boolean }
 
     // const compoundHasIndex = () => {
   //   // const hasIndex = Record<string, true>
@@ -82,20 +114,3 @@ async function* validate(dir: string): AsyncGenerator<Violation> {
   // }
 
   // const v = compoundHasIndex()
-
-  let indexFilesState = {}
-  let compoundDirectoriesState = {}
-  for await (const pathEntry of iterator) {
-    indexFilesState = indexFiles(indexFilesState, pathEntry)
-    compoundDirectoriesState = compoundDirectories(compoundDirectoriesState, pathEntry)
-  }
-  console.log({ indexFilesState, compoundDirectoriesState })
-}
-
-async function main() {
-  for await (const x of await validate('/home/mike/workspace/pro/app/javascript')) {
-    console.log(x)
-  }
-}
-
-main()
