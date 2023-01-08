@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+npm exec ts-node $(dirname $0)/../flay/src/index.ts $1

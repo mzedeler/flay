@@ -60,7 +60,7 @@ async function main() {
 
   const indent = (message: string) => message.replace(new RegExp('^', 'g'), '  ')
 
-  for await (const violation of await validate('/home/mike/workspace/pro/app/javascript')) {
+  for await (const violation of await validate(process.argv[2])) {
     if (!failed) {
       failed = true
       console.log('')
