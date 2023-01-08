@@ -1,27 +1,10 @@
-import { opendir } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
+import { dirname } from 'node:path'
 
-import type { Dirent } from 'node:fs'
+import type { PathEntry } from './types/PathEntry'
 
-type PathEntry = {
-  dirent: Dirent
-  path: string
-}
-
-async function* traverse(dir: string): AsyncGenerator<PathEntry> {
-  const dh = await opendir(dir)
-  for await (const dirent of dh) {
-    yield {
-      path: join(dir, dirent.name),
-      dirent
-    }
-    if (dirent.isDirectory()) {
-      for await (const x of await traverse(join(dir, dirent.name))) {
-        yield x
-      }
-    }
-  }
-}
+import { getPathEntryMap } from './utils/getPathEntryMap'
+import { getIndexFiles } from './utils/getIndexFiles'
+import { getCompoundDirectories } from './utils/getCompoundDirectories'
 
 type Violation = {
   pathEntries: PathEntry[]
@@ -31,17 +14,14 @@ type Violation = {
 type PathEntryMap = Record<string, PathEntry>
 
 async function* validate(dir: string): AsyncGenerator<Violation> {
-  const indexFiles: PathEntryMap = {}
-  const compoundDirectories: PathEntryMap = {}
+  const pathEntryMap = await getPathEntryMap(dir)
+  const indexFiles = await getIndexFiles(dir)
+  const compoundDirectories = await getCompoundDirectories(dir)
   const collections: PathEntryMap = {}
 
-  for await (const pathEntry of traverse(dir)) {
-    if (pathEntry.dirent.isFile() && pathEntry.dirent.name.match(/^index.tsx?$/)) {
-      indexFiles[pathEntry.path] = pathEntry
-    } else if (pathEntry.dirent.isDirectory()) {
-      if (pathEntry.dirent.name.match(/[A-Z]/)) {
-        compoundDirectories[pathEntry.path] = pathEntry
-      } else {
+  for await (const pathEntry of Object.values(pathEntryMap)) {
+    if (pathEntry.dirent.isDirectory()) {
+      if (!pathEntry.dirent.name.match(/[A-Z]/)) {
         collections[pathEntry.path] = pathEntry
       }
     }
