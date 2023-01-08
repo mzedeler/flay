@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import { dirname } from 'node:path'
 
 import type { PathEntry } from './types/PathEntry'
@@ -5,9 +6,11 @@ import type { PathEntry } from './types/PathEntry'
 import { getPathEntryMap } from './utils/getPathEntryMap'
 import { getIndexFiles } from './utils/getIndexFiles'
 import { getCompoundDirectories } from './utils/getCompoundDirectories'
+import { getCollections } from './utils/getCollections'
 
 type Violation = {
   pathEntries: PathEntry[]
+  title: string
   message: string
 }
 
@@ -17,119 +20,63 @@ async function* validate(dir: string): AsyncGenerator<Violation> {
   const pathEntryMap = await getPathEntryMap(dir)
   const indexFiles = await getIndexFiles(dir)
   const compoundDirectories = await getCompoundDirectories(dir)
-  const collections: PathEntryMap = {}
-
-  for await (const pathEntry of Object.values(pathEntryMap)) {
-    if (pathEntry.dirent.isDirectory()) {
-      if (!pathEntry.dirent.name.match(/[A-Z]/)) {
-        collections[pathEntry.path] = pathEntry
-      }
-    }
-  }
+  const collections = await getCollections(dir)
 
   const indexFileDirectoryPaths = Object.keys(indexFiles).map(dirname)
-  
-  const compoundDirectoriesWithoutIndexFiles = compoundDirectories
-  for (const directory of indexFileDirectoryPaths) {
-    delete compoundDirectoriesWithoutIndexFiles[directory]
-  }
 
-  console.log(compoundDirectoriesWithoutIndexFiles)
-
-  const collectionsWithIndexFiles: PathEntryMap = {}
-  for (const path of indexFileDirectoryPaths) {
-    if (collections[path]) {
-      collectionsWithIndexFiles[path] = collections[path]
+  const getCompoundDirectoriesWithoutIndexFiles = () => {
+    const result = compoundDirectories
+    for (const directory of indexFileDirectoryPaths) {
+      delete result[directory]
     }
+    return Object.values(result)
   }
 
-  console.log(collectionsWithIndexFiles)
+  yield {
+    title: 'Compound directories without index files',
+    message: 'These compound directories are missing index files.',
+    pathEntries: getCompoundDirectoriesWithoutIndexFiles()
+  }
+
+  const getCollectionsWithIndexFiles = () => {
+    const result: PathEntryMap = {}
+    for (const path of indexFileDirectoryPaths) {
+      if (collections[path]) {
+        result[path] = collections[path]
+      }
+    }
+    return Object.values(result)
+  }
+
+  yield {
+    title: 'Collections with index files',
+    message: 'These collections have unexpected index files.',
+    pathEntries: getCollectionsWithIndexFiles()
+  }
 }
 
 async function main() {
-  for await (const x of await validate('/home/mike/workspace/pro/app/javascript')) {
-    console.log(x)
+  let failed
+
+  const indent = (message: string) => message.replace(new RegExp('^', 'g'), '  ')
+
+  for await (const violation of await validate('/home/mike/workspace/pro/app/javascript')) {
+    if (!failed) {
+      failed = true
+      console.log('')
+      console.log(chalk.red(chalk.inverse(' FAIL ')))
+    }
+    console.log('')
+    console.log(indent(chalk.bold(violation.title)))
+    console.log(indent(chalk.yellow(violation.message)))
+    console.log('')
+    violation.pathEntries.forEach(pathEntry => console.log(indent(pathEntry.path)))
+    console.log('')
+  }
+
+  if (failed) {
+    process.exit(-1)
   }
 }
 
 main()
-
-// admin
-
-// const collections = `(
-//   __mocks__
-// |  __snapshots__
-// |  __tests__
-// |  actions
-//   annotations
-//   announcements
-//   api
-//   area
-//   array
-//   assets
-//   categories
-//   channels
-//   common
-//   components
-//   config
-//   consts
-//   contexts
-//   controllers
-//   core
-//   courses
-//   da
-//   data
-//   device
-//   document
-//   documents
-//   elements
-//   en
-//   entities
-//   errors
-//   experts
-//   features
-//   feedback
-//   fonts
-//   forms
-//   helpers
-//   hoc
-//   hooks
-//   icons
-//   images
-//   jobs
-//   karnov-display
-//   layouts
-//   middlewares
-//   mock
-//   mocks
-//   objects
-//   onboarding
-//   packs
-//   pages
-//   properties
-//   redirects
-//   reducers
-//   redux
-//   registry
-//   roboto
-//   segment
-//   selectors
-//   services
-//   settings
-//   store
-//   styles
-//   superhits
-//   sv
-//   svg
-//   tailwind
-//   test
-//   tip
-//   tools
-//   translations
-//   types
-//   ui
-//   utilities
-//   utils
-//   vendor
-//   xml
-// )`

@@ -2,15 +2,9 @@
   "name": "flay",
   "version": "1.0.0",
   "description": "File system linting",
-  "main": "src/index.ts",
+  "main": "src/index.js",
   "scripts": {
-    "test": "ts-mocha"
-  },
-  "mocha": {
-    "extension": "ts",
-    "spec": [
-      "src/**/*.test.ts"
-    ]
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -26,14 +20,10 @@
     "url": "https://github.com/mzedeler/flay/issues"
   },
   "homepage": "https://github.com/mzedeler/flay#readme",
-  "devDependencies": {
-    "@tsconfig/recommended": "^1.0.1",
-    "@types/expect": "^24.3.0",
-    "ts-mocha": "^10.0.0"
-  },
   "dependencies": {
-    "@types/node": "^18.11.18",
-    "chalk": "^4",
+    "@types/expect": "^24.3.0",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1"
   }
 }
