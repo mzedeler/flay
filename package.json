@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "File system linting",
   "main": "src/index.ts",
+  "bin": "./bin/flay.sh",
   "scripts": {
     "test": "ts-mocha"
   },
