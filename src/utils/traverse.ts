@@ -10,7 +10,7 @@ export async function* traverse(dir: string): AsyncGenerator<PathEntry> {
       path: join(dir, dirent.name),
       dirent
     }
-    if (dirent.isDirectory()) {
+    if (dirent.isDirectory() && dirent.name !== 'node_modules') {
       for await (const pathEntry of await traverse(join(dir, dirent.name))) {
         yield pathEntry
       }
