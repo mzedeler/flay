@@ -1,3 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env node
 
-npm exec ts-node $(dirname $0)/../flay/src/index.ts $1
+const { resolve, join } = require('path')
+require(join(resolve(__filename), '..', '..', 'lib', 'index.js'))
