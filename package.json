@@ -31,11 +31,11 @@
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
     "@types/expect": "^24.3.0",
-    "ts-mocha": "^10.0.0"
+    "@types/node": "^18.11.18",
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.1"
   },
   "dependencies": {
-    "@types/node": "^18.11.18",
-    "chalk": "^4",
-    "ts-node": "^10.9.1"
+    "chalk": "^4"
   }
 }
