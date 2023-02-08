@@ -6,8 +6,10 @@ import { getIndexFiles } from './getIndexFiles'
 
 import type { Violation } from '../types/Violation'
 import type { PathEntryMap } from '../types/PathEntryMap'
+import { getIsIgnored } from './getIsIgnored'
 
 export async function* validate(dir: string): AsyncGenerator<Violation> {
+    const isIgnored = await getIsIgnored(dir)
     const indexFiles = await getIndexFiles(dir)
     const compoundDirectories = await getCompoundDirectories(dir)
     const collections = await getCollections(dir)
@@ -19,7 +21,7 @@ export async function* validate(dir: string): AsyncGenerator<Violation> {
       for (const directory of indexFileDirectoryPaths) {
         delete result[directory]
       }
-      return Object.values(result)
+      return Object.values(result).filter(({ path }) => !isIgnored(path))
     }
 
     yield {
@@ -35,7 +37,7 @@ export async function* validate(dir: string): AsyncGenerator<Violation> {
           result[path] = collections[path]
         }
       }
-      return Object.values(result)
+      return Object.values(result).filter(({ path }) => !isIgnored(path))
     }
 
     yield {
