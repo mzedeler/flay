@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-import { validate } from './utils/validate'
+import { validate } from './validate/validate'
 
 async function main() {
   let failed

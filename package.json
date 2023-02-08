@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "bin": "./bin/flay",
   "scripts": {
+    "start": "bin/flay",
     "build": "tsc",
     "test": "ts-mocha"
   },
