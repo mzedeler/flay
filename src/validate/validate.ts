@@ -16,33 +16,44 @@ export async function* validate(dir: string): AsyncGenerator<Violation> {
 
     const indexFileDirectoryPaths = Object.keys(indexFiles).map(dirname)
 
-    const getCompoundDirectoriesWithoutIndexFiles = () => {
-      const result = compoundDirectories
-      for (const directory of indexFileDirectoryPaths) {
-        delete result[directory]
+    {
+      const getCompoundDirectoriesWithoutIndexFiles = () => {
+        const result = compoundDirectories
+        for (const directory of indexFileDirectoryPaths) {
+          delete result[directory]
+        }
+        return Object.values(result).filter(({ path }) => !isIgnored(path))
       }
-      return Object.values(result).filter(({ path }) => !isIgnored(path))
-    }
 
-    yield {
-      title: 'Compound directories without index files',
-      message: 'These compound directories are missing index files.',
-      pathEntries: getCompoundDirectoriesWithoutIndexFiles()
-    }
-
-    const getCollectionsWithIndexFiles = () => {
-      const result: PathEntryMap = {}
-      for (const path of indexFileDirectoryPaths) {
-        if (collections[path]) {
-          result[path] = collections[path]
+      const pathEntries = getCompoundDirectoriesWithoutIndexFiles()
+      if (pathEntries.length) {
+        yield {
+          title: 'Compound directories without index files',
+          message: 'These compound directories are missing index files.',
+          pathEntries: getCompoundDirectoriesWithoutIndexFiles()
         }
       }
-      return Object.values(result).filter(({ path }) => !isIgnored(path))
     }
 
-    yield {
-      title: 'Collections with index files',
-      message: 'These collections have unexpected index files.',
-      pathEntries: getCollectionsWithIndexFiles()
+    {
+      const getCollectionsWithIndexFiles = () => {
+        const result: PathEntryMap = {}
+        for (const path of indexFileDirectoryPaths) {
+          if (collections[path]) {
+            result[path] = collections[path]
+          }
+        }
+        return Object.values(result).filter(({ path }) => !isIgnored(path))
+      }
+
+      const pathEntries = getCollectionsWithIndexFiles()
+
+      if (pathEntries.length) {
+        yield {
+          title: 'Collections with index files',
+          message: 'These collections have unexpected index files.',
+          pathEntries
+        }
+      }
     }
   }
