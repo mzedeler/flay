@@ -1,6 +1,6 @@
 {
-  "name": "flay",
-  "version": "1.0.0",
+  "name": "@mzedeler/flay",
+  "version": "1.0.1",
   "description": "File system linting",
   "main": "lib/index.js",
   "bin": "./bin/flay",
@@ -24,7 +24,7 @@
     "filesystem"
   ],
   "author": "Michael Zedeler <michael@zedeler.dk>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/mzedeler/flay/issues"
   },
