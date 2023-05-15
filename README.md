@@ -60,3 +60,7 @@ To ignore foo/bar here:
 ```
 
 Put `foo/bar` in a top level `.flayignore` file or but `bar` in a `.flayignore` file in `foo`.
+
+# Contributors
+
+Michael Zedeler <michael@zedeler.dk>
